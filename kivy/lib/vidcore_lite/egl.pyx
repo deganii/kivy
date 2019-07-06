@@ -626,10 +626,19 @@ def bcm_element_add(bcm.UpdateHandle update,
                 bcm.DisplayHandle display,
                 bcm.int32_t layer,
                 bcm.Rect dest_rect,
-                bcm.Rect src_rect):
+                bcm.Rect src_rect, 
+                bcm.int32_t overlay):
     cdef:
         bcm.DISPMANX_ELEMENT_HANDLE_T elem
+        bcm.VC_DISPMANX_ALPHA_T alpha
         bcm.ElementHandle E
+
+    if overlay: # transparent overlay via alpha blend
+        alpha.flags = <bcm.DISPMANX_FLAGS_ALPHA_T>(bcm.DISPMANX_FLAGS_ALPHA_T.DISPMANX_FLAGS_ALPHA_MIX)
+    else: # opaque window
+        alpha.flags = <bcm.DISPMANX_FLAGS_ALPHA_T>(bcm.DISPMANX_FLAGS_ALPHA_T.DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS)
+    alpha.opacity = 255
+
     elem = bcm.vc_dispmanx_element_add (update._handle,
                                      display._handle,
                                      layer,
@@ -637,7 +646,7 @@ def bcm_element_add(bcm.UpdateHandle update,
                                      0, #DISPMANX_RESOURCE_HANDLE_T src,
                                      &(src_rect._vc_rect),
                                      0, #DISPMANX_PROTECTION_T protection,
-                                     <bcm.VC_DISPMANX_ALPHA_T *>0, #VC_DISPMANX_ALPHA_T *alpha,
+                                     &alpha, #VC_DISPMANX_ALPHA_T *alpha,
                                      <bcm.DISPMANX_CLAMP_T *>0, #DISPMANX_CLAMP_T *clamp,
                                      <bcm.DISPMANX_TRANSFORM_T>0) #DISPMANX_TRANSFORM_T transform
     E = bcm.ElementHandle()
